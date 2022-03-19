@@ -23,7 +23,7 @@ or by downloading and unzipping it in `LOCAL_REPOSITORY_PATH`. Then:
 - Verify instllation by starting the Anaconda Prompt. A terminal should start with the text `(base)` written at the beginning of the line.
 - Set the IML conda environment. Start the Anaconda Prompt and write:
   ```
-  conda env create -f "LOCAL_REPOSITORY_PATH\environment.yml"
+  conda env create -f "C:\amiti_hamalka\iml\IML.HUJI\environment.yml"
   ```
   This will create a conda envoronment named `iml.env` with the specifications defined in `environment.yml`. If creating failed due to `ResolvePackageNotFound: plotly-orca` remove this line from environment file, create environment without, and then after activating environment run:
   ```
