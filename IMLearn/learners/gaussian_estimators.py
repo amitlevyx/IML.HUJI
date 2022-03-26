@@ -106,11 +106,10 @@ class UnivariateGaussian:
             log-likelihood calculated
         """
         n = X.size
-        var = np.power(sigma, 2)
         sum = 0
         for x in X:
             sum += np.power((x - mu), 2)
-        return -(n / 2) * np.log(2 * np.pi) - (n / 2) * np.log(var) - (1 / (2 * var)) * sum
+        return -(n / 2) * np.log(2 * np.pi) - (n / 2) * np.log(sigma) - (1 / (2 * sigma)) * sum
 
 
 class MultivariateGaussian:

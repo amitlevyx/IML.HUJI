@@ -6,7 +6,6 @@ pio.templates.default = "simple_white"
 
 
 def test_univariate_gaussian():
-    np.random.seed(0)
     univariate_gaussian = UnivariateGaussian()
     # Question 1 - Draw samples and print fitted model
     expectation = 10
@@ -52,7 +51,6 @@ def test_univariate_gaussian():
 
 
 def test_multivariate_gaussian():
-    np.random.seed(0)
     multivariate_gaussian = MultivariateGaussian()
     # Question 4 - Draw samples and print fitted model
     mu1 = np.array([0, 0, 4, 0])
