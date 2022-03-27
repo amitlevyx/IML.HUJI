@@ -4,6 +4,7 @@ from IMLearn.base import BaseEstimator
 import numpy as np
 
 
+#test
 class AgodaCancellationEstimator(BaseEstimator):
     """
     An estimator for solving the Agoda Cancellation challenge
