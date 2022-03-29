@@ -54,10 +54,7 @@ class LinearRegression(BaseEstimator):
         """
         if self.include_intercept_:
             np.insert(X, 0, 1)
-        inverted = inv(np.matmul(np.transpose(X), X))
-        # todo maybe change to pseudo inverse
-        x_factors = np.matmul(inverted, np.transpose(X))
-        self.coefs_ = np.matmul(x_factors, y)
+        self.coefs_ = np.matmul(pinv(X), y)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
