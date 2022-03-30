@@ -28,12 +28,15 @@ def load_data(filename: str):
     df.drop(df[(df["id"] == 0)].index, inplace=True)
     features = df[["bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view", "condition",
                    "grade", "sqft_above", "sqft_basement", "sqft_living15", "sqft_lot15"]]
-    features = pd.concat([features, pd.get_dummies(df['zipcode'])], axis=1)
+    features = pd.concat([features, pd.get_dummies(df['zipcode'], prefix="zipcode_")], axis=1)
     year_built = 2022 - df["yr_built"]
     year_renovated = 2022 - df["yr_renovated"]
-    features[["year_since_last_remodel/built"]] = pd.concat([year_built, year_renovated], axis=1).min(axis=1)
+    features[["year_since_last_remodel"]] = pd.concat([year_built, year_renovated], axis=1).min(axis=1)
     response = df[['price']]
+    # todo remove neg prices
+    # todo add zip code titles.
     return features, response
+
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
     """
@@ -52,23 +55,37 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
-    raise NotImplementedError()
+
+    # todo for bad feature choose one with pearson close to zero, for good pearson close to 1/-1
+    for feature in X.columns.values:
+        stdX = np.std(X[feature].tolist())
+        y_list = y['price'].tolist()
+        stdY = np.std(y_list)
+        covXy = np.cov(X[feature], y_list, rowvar=False)
+        pearson_corr = covXy / (stdX * stdY)
+        fig1 = go.Figure()
+        fig1.add_trace(go.Scatter(x=X[feature], y=y_list, mode="markers", marker=dict(color="purple")))
+        # fig1.update_xaxes(type='category')
+        fig1.update_layout(title="Pearson Correlation between " + str(feature) + " and response is " +
+                                 str(pearson_corr[0][1]) + ". feature is - " + str(feature), xaxis_title=str(feature) + " value",
+                           yaxis_title="response result")
+        fig1.write_html(output_path + "/" + str(feature) + ".html")
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    features, response = load_data("C:/amiti_hamalka/iml/IML.HUJI/datasets/house_prices.csv")
-    pd.DataFrame(features).to_csv("test_data.csv", index=False)
-    pd.DataFrame(response).to_csv("response.csv", index=False)
 
     # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
+    features, response = load_data("C:/amiti_hamalka/iml/IML.HUJI/datasets/house_prices.csv")
+    # pd.DataFrame(features).to_csv("test_data.csv", index=False)
+    # pd.DataFrame(response).to_csv("response.csv", index=False)
 
     # Question 2 - Feature evaluation with respect to response
-    raise NotImplementedError()
+
+    # feature_evaluation(features, response, "C:/amiti_hamalka/iml/IML.HUJI/exercises/plots")
 
     # Question 3 - Split samples into training- and testing sets.
-    raise NotImplementedError()
+    train_X, train_X, test_X, test_y = split_train_test(features, response)
 
     # Question 4 - Fit model over increasing percentages of the overall training data
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
