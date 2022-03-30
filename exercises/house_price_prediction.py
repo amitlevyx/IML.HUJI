@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
+
 pio.templates.default = "simple_white"
 
 
@@ -23,8 +24,16 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
-
+    df = pd.read_csv(filename).dropna().drop_duplicates()
+    df.drop(df[(df["id"] == 0)].index, inplace=True)
+    features = df[["bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view", "condition",
+                   "grade", "sqft_above", "sqft_basement", "sqft_living15", "sqft_lot15"]]
+    features = pd.concat([features, pd.get_dummies(df['zipcode'])], axis=1)
+    year_built = 2022 - df["yr_built"]
+    year_renovated = 2022 - df["yr_renovated"]
+    features[["year_since_last_remodel/built"]] = pd.concat([year_built, year_renovated], axis=1).min(axis=1)
+    response = df[['price']]
+    return features, response
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
     """
@@ -48,6 +57,10 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 
 if __name__ == '__main__':
     np.random.seed(0)
+    features, response = load_data("C:/amiti_hamalka/iml/IML.HUJI/datasets/house_prices.csv")
+    pd.DataFrame(features).to_csv("test_data.csv", index=False)
+    pd.DataFrame(response).to_csv("response.csv", index=False)
+
     # Question 1 - Load and preprocessing of housing prices dataset
     raise NotImplementedError()
 
