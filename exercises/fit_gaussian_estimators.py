@@ -13,7 +13,6 @@ def test_univariate_gaussian():
     vector = np.random.normal(expectation, variance, 1000)
     univariate_gaussian.fit(vector)
     tuple = (univariate_gaussian.mu_, univariate_gaussian.var_)
-    print(tuple)
 
 
     # Question 2 - Empirically showing sample mean is consistent

@@ -36,13 +36,18 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
     joined = pd.concat([X, y], axis=1)
     train_set = joined.sample(frac=train_proportion)
     test_set = joined.drop(train_set.index)
-    train_y = train_set.iloc[:, -1].to_frame
-    train_X = train_set.drop(train_y.index)
-    test_y = test_set.iloc[:, -1].to_frame
-    test_X = test_set.drop(test_y.index)
-    return train_X, train_X, test_X, test_y
+    train_X, train_y = split_set_to_X_y(train_set)
+    test_X, test_y = split_set_to_X_y(test_set)
+    return train_X, train_y, test_X, test_y
 
 
+def split_set_to_X_y(set):
+    set_y = set.iloc[:, -1]
+    set_X = set.drop(set_y.name, axis=1)
+    return set_X, set_y
+
+def include_intercept(X):
+    return np.append(np.ones((X.shape[0], 1)), X, axis=1)
 def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     Compute a confusion matrix between two sets of integer vectors

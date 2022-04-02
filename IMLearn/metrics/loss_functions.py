@@ -16,10 +16,7 @@ def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     -------
     MSE of given predictions
     """
-    sum = 0
-    for i in range(y_pred.size):
-        sum += np.power((y_true[i] - y_pred[i]), 2)
-    return sum
+    return np.mean(np.power(y_true - y_pred, 2))
 
 
 
