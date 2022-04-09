@@ -1,3 +1,4 @@
+from IMLearn.metrics import loss_functions
 from IMLearn.utils import split_train_test, split_set_to_X_y, utils
 from IMLearn.learners.regressors import LinearRegression
 
@@ -26,17 +27,15 @@ def load_data(filename: str):
     """
     df = pd.read_csv(filename).dropna().drop_duplicates()
     df.drop(df[(df["id"] == 0)].index, inplace=True)
-    df = df[df['price'] > 0]
+    df.drop(df[(df["price"] <= 0)].index, inplace=True)
+    df.drop(df[(df["bedrooms"] <= 0)].index, inplace=True)
     features = df[["bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view", "condition",
                    "grade", "sqft_above", "sqft_basement", "sqft_living15", "sqft_lot15"]]
     features = pd.concat([features, pd.get_dummies(df['zipcode'], prefix="zipcode_")], axis=1)
     year_built = 2022 - df["yr_built"]
     year_renovated = 2022 - df["yr_renovated"]
     features[["year_since_last_remodel"]] = pd.concat([year_built, year_renovated], axis=1).min(axis=1)
-    # indice_to_drop = df[(df['price'] <= 0) | (df['bedrooms'] < 0)].index
-    # features = features.drop(indice_to_drop, inplace=True)
     response = df[['price']]
-    # todo remove neg prices
     return features, response
 
 
@@ -76,7 +75,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 
 if __name__ == '__main__':
     np.random.seed(0)
-
+    print(loss_functions.mean_square_error(np.array([279000, 432000, 326000, 333000, 437400, 555950]), np.array([199000.37562541, 452589.25533196, 345267.48129011, 345856.57131275, 563867.1347574, 395102.94362135])))
     # Question 1 - Load and preprocessing of housing prices dataset
     features, response = load_data("C:/amiti_hamalka/iml/IML.HUJI/datasets/house_prices.csv")
     # pd.DataFrame(features).to_csv("test_data.csv", index=False)
@@ -98,45 +97,29 @@ if __name__ == '__main__':
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
     ave_loss = []
     ave_var = []
+    joined = pd.concat([train_X, train_y], axis=1)
+    fitter = LinearRegression(True)
     for p in range(10, 101, 1):
         p_loss = []
-        joined = pd.concat([train_X, train_y], axis=1)
         for i in range(10):
-            fitter = LinearRegression(True)
-            cur_data = joined.sample(frac=(p*0.01))
+            cur_data = joined.sample(frac=(p * 0.01))
             cur_X, cur_y = split_set_to_X_y(cur_data)
             fitter.fit(cur_X.to_numpy(), cur_y)
             cur_loss = fitter.loss(utils.include_intercept(test_X), test_y.to_numpy())
             p_loss.append(cur_loss)
         ave_var.append(np.var(p_loss))
         ave_loss.append(np.mean(p_loss))
-    p = np.linspace(10, 100, 90)
+    p = np.linspace(10, 100, 91)
     fig2 = go.Figure()
-    upper_bound = list(np.array(ave_loss)+2*np.array(ave_var))
-    lower_bound = list(np.array(ave_loss)-2*np.array(ave_var))
+    upper_bound = list(np.array(ave_loss) + 2 * np.sqrt(np.array(ave_var)))
+    lower_bound = list(np.array(ave_loss) - 2 * np.sqrt(np.array(ave_var)))
     print(upper_bound)
     print(lower_bound)
-    fig2.add_trace(go.Scatter(name="loss", x=p, y=ave_loss, mode="markers", marker=dict(color="purple")),
-                   go.Scatter(
-                       name='Upper Bound',
-                       x=p,
-                       y=upper_bound,
-                       mode='lines',
-                       marker=dict(color="#444"),
-                       line=dict(width=0),
-                       showlegend=False
-                   ),
-                   go.Scatter(
-                       name='Lower Bound',
-                       x=p,
-                       y=lower_bound,
-                       marker=dict(color="#444"),
-                       line=dict(width=0),
-                       mode='lines',
-                       fillcolor='rgba(68, 68, 68, 0.3)',
-                       fill='tonexty',
-                       showlegend=False
-                   ))
+    fig2.add_trace(go.Scatter(name="loss", x=p, y=ave_loss, mode="lines", line=dict(color="purple")))
+    fig2.add_trace(go.Scatter(name='Upper Bound', x=p, y=upper_bound, mode='lines', marker=dict(color="#444"),
+                              line=dict(width=0), showlegend=False))
+    fig2.add_trace(go.Scatter(name='Lower Bound', x=p, y=lower_bound, marker=dict(color="#444"), line=dict(width=0),
+                              mode='lines', fillcolor='rgba(68, 68, 68, 0.3)', fill='tonexty', showlegend=False))
     fig2.update_layout(title="average loss as function of training size",
                        xaxis_title="percentage taken from training data", yaxis_title="average loss")
     fig2.show()

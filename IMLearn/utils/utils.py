@@ -46,8 +46,11 @@ def split_set_to_X_y(set):
     set_X = set.drop(set_y.name, axis=1)
     return set_X, set_y
 
+
 def include_intercept(X):
     return np.append(np.ones((X.shape[0], 1)), X, axis=1)
+
+
 def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     Compute a confusion matrix between two sets of integer vectors
