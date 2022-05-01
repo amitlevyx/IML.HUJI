@@ -113,8 +113,6 @@ if __name__ == '__main__':
     fig2 = go.Figure()
     upper_bound = list(np.array(ave_loss) + 2 * np.sqrt(np.array(ave_var)))
     lower_bound = list(np.array(ave_loss) - 2 * np.sqrt(np.array(ave_var)))
-    print(upper_bound)
-    print(lower_bound)
     fig2.add_trace(go.Scatter(name="loss", x=p, y=ave_loss, mode="lines", line=dict(color="purple")))
     fig2.add_trace(go.Scatter(name='Upper Bound', x=p, y=upper_bound, mode='lines', marker=dict(color="#444"),
                               line=dict(width=0), showlegend=False))

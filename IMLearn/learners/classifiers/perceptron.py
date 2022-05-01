@@ -4,6 +4,9 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 
+from ...metrics import loss_functions
+from ...utils import utils
+
 
 def default_callback(fit: Perceptron, x: np.ndarray, y: int):
     pass
@@ -33,6 +36,7 @@ class Perceptron(BaseEstimator):
         to be filled in `Perceptron.fit` function.
 
     """
+
     def __init__(self,
                  include_intercept: bool = True,
                  max_iter: int = 1000,
@@ -90,7 +94,20 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = utils.include_intercept(X)
+        self.coefs_ = np.zeros(X.shape[1])
+        self.fitted_ = True
+        for t in range(self.max_iter_):
+            should_break = True
+            for i in range(len(y)):
+                if y[i] * (self.coefs_.transpose() @ X[i]) <= 0:
+                    self.coefs_ += y[i] * X[i]
+                    should_break = False
+                    self.callback_(self, X[i], y[i])
+                    break
+            if should_break:
+                break
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -106,7 +123,13 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = utils.include_intercept(X)
+        sample_num = X.shape[0]
+        predicted = np.zeros(sample_num)
+        for i in range(sample_num):
+            predicted[i] = np.sign(self.coefs_.transpose() @ X[i])
+        return predicted
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -125,4 +148,4 @@ class Perceptron(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        return loss_functions.misclassification_error(y, self._predict(X))
